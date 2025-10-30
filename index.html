@@ -28,6 +28,7 @@
     <script src="js/dropdown.js"></script>
     <script src="js/table.js"></script>
     <script src="js/helper.js"></script>
+    <script src="js/storage.js"></script>
     <script src="js/fertilizers.js"></script>
     <script src="js/calculator.js"></script>
     <title>bergrows Düngerrechner</title>
@@ -82,6 +83,12 @@
             <details class="dropdown">
               <summary role="button" class="contrast outline">Einstellungen</summary>
               <ul>
+                <li>
+                  <label>
+                    <input type="checkbox" id="persist-fertilizers-toggle" onchange="toggleFertilizerPersistence(event)" />
+                    Düngerauswahl speichern
+                  </label>
+                </li>
                 <li><a href="#" data-target="new-fert-modal" onclick="toggleModal(event)">Neuer Dünger</a></li>
                 <li><a href="#" data-target="water-modal" onclick="toggleModal(event)">Wasserwerte</a></li>
                 <li><a href="#" data-target="reset-modal" onclick="toggleModal(event)">Daten löschen</a></li>

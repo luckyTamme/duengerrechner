@@ -8,7 +8,7 @@ const convTable = {
   po4: { to: "p", factor: 0.326 },
   so4: { to: "s", factor: 0.334 },
 };
-var waterData = JSON.parse(localStorage.getItem("waterData")) || {};
+var waterData = getWaterData();
 var waterLimits = {
   kh: 10,
   n: 50,
@@ -20,6 +20,8 @@ var waterLimits = {
   na: 115,
   cl: 140,
 };
+var persistFertilizers = getPersistFertilizers();
+var isLoadingFertilizers = false;
 // Init
 const init = () => {
   populateWaterModalForm();
@@ -57,6 +59,15 @@ const init = () => {
     "TT.MM.JJJJ",
     new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })
   );
+
+  // Initialize persistence toggle state
+  const persistToggle = document.querySelector("#persist-fertilizers-toggle");
+  persistToggle.checked = persistFertilizers;
+
+  // Load saved fertilizers if persistence is enabled
+  if (persistFertilizers) {
+    loadSavedFertilizers();
+  }
 };
 
 const toggleTheme = (event) => {
@@ -70,7 +81,7 @@ const toggleTheme = (event) => {
 const addFertilizer = (data) => {
   const id = 1000 + customFertData.length;
   customFertData.push({ id: id, ...data });
-  localStorage.setItem("customFertData", JSON.stringify(customFertData));
+  setCustomFertData(customFertData);
 };
 
 const addFertRow = (numRows = 1) => {
@@ -103,6 +114,11 @@ const updateFertRow = (row, checklistRow) => {
   updateRow(row, { dose: `${formatValue(dose, 2, data.u)}`, ...data }, dose);
   updateChecklistRow(checklistRow, { dose, ...data });
   updateSums();
+
+  // Auto-save if persistence is enabled (but not during initial load)
+  if (persistFertilizers && !isLoadingFertilizers) {
+    saveFertilizers();
+  }
 };
 
 const removeFertRow = () => {
@@ -112,6 +128,11 @@ const removeFertRow = () => {
   if (tbody.querySelectorAll("tr").length === 1) rowButtons.querySelectorAll("button")[1].disabled = true;
   removeRow(document.querySelector("#checklist-table tbody"));
   updateSums();
+
+  // Auto-save if persistence is enabled (but not during initial load)
+  if (persistFertilizers && !isLoadingFertilizers) {
+    saveFertilizers();
+  }
 };
 
 const updateWaterRow = (row) => {
@@ -254,7 +275,7 @@ const saveWaterModalForm = (event) => {
       waterData[convTable[k].to] = round(v * convTable[k].factor, 3);
     } else waterData[k] = v;
   }
-  localStorage.setItem("waterData", JSON.stringify(waterData));
+  setWaterData(waterData);
   updateWaterRow(document.querySelector("#water-row"));
   toggleModal(event);
 };
@@ -289,11 +310,95 @@ const updateChecklistRow = (row, data) => {
 
 // Reset Modal
 const resetCalculator = (event) => {
-  localStorage.removeItem("waterData");
-  localStorage.removeItem("customFertData");
+  clearAllStorage();
   location.reload();
 };
 
 const updateChecklistMultiplier = (event) => {
   document.querySelectorAll("#checklist-table tbody tr").forEach((row) => updateChecklistRow(row));
+};
+
+// Fertilizer Persistence Functions
+const toggleFertilizerPersistence = (event) => {
+  persistFertilizers = event.currentTarget.checked;
+  setPersistFertilizers(persistFertilizers);
+
+  if (persistFertilizers) {
+    // Save current state when enabling
+    saveFertilizers();
+  } else {
+    // Clear saved data when disabling
+    clearSavedFertilizers();
+  }
+};
+
+const saveFertilizers = () => {
+  const tbody = document.querySelector("#fertilizer-table");
+  const rows = tbody.querySelectorAll("tr[data-type=fertilizer]");
+  const fertilizers = [];
+
+  rows.forEach((row) => {
+    const fertInput = row.querySelector("input[name=fertilizer]");
+    const doseInput = row.querySelector("input[name=dose]");
+
+    if (fertInput && doseInput && fertInput.value) {
+      fertilizers.push({
+        name: fertInput.value,
+        dose: doseInput.value,
+      });
+    }
+  });
+
+  setSavedFertilizers(fertilizers);
+};
+
+const loadSavedFertilizers = () => {
+  try {
+    const savedData = getSavedFertilizers();
+    if (!savedData || savedData.length === 0) return;
+
+    // Set flag to prevent auto-save during load
+    isLoadingFertilizers = true;
+
+    const tbody = document.querySelector("#fertilizer-table");
+
+    // Add additional rows if needed (subtract 1 because we already have one row)
+    const rowsToAdd = savedData.length - 1;
+    if (rowsToAdd > 0) {
+      addFertRow(rowsToAdd);
+    }
+
+    // Populate the rows with saved data
+    const rows = tbody.querySelectorAll("tr[data-type=fertilizer]");
+    const checklistRows = document.querySelectorAll("#checklist-table tbody tr");
+
+    savedData.forEach((fert, index) => {
+      if (index < rows.length) {
+        const row = rows[index];
+        const checklistRow = checklistRows[index];
+
+        // Set fertilizer name
+        const fertInput = row.querySelector("input[name=fertilizer]");
+        if (fertInput) {
+          fertInput.value = fert.name;
+        }
+
+        // Set dose
+        const doseInput = row.querySelector("input[name=dose]");
+        if (doseInput) {
+          doseInput.value = fert.dose;
+        }
+
+        // Manually trigger the row update without dispatching input events
+        updateFertRow(row, checklistRow);
+      }
+    });
+  } catch (error) {
+    console.error("Error loading saved fertilizers:", error);
+    // Clear corrupted data
+    clearSavedFertilizers();
+  } finally {
+    // Reset flag after load is complete
+    isLoadingFertilizers = false;
+  }
 };
