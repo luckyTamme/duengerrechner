@@ -123,7 +123,8 @@ div.dropdown {
   color: var(--pico-dropdown-color);
   cursor: pointer;
 }
-.dropdown-list li:hover {
+.dropdown-list li:hover,
+.dropdown-list li.highlighted {
   background-color: var(--pico-dropdown-hover-background-color);
 }
 .dropdown-list mark {

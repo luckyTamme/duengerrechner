@@ -22,6 +22,71 @@ var waterLimits = {
 };
 var persistFertilizers = getPersistFertilizers();
 var isLoadingFertilizers = false;
+
+// Helper function to attach dropdown blur handler
+const attachDropdownBlurHandler = (inputElement) => {
+  inputElement.addEventListener("blur", (event) => {
+    const input = event.currentTarget;
+    const dropdown = input.closest("div").querySelector("ul.dropdown-list");
+
+    // Small delay to allow click events on dropdown items to complete
+    setTimeout(() => {
+      if (dropdown) {
+        dropdown.classList.add("hidden");
+      }
+    }, 150);
+  });
+};
+
+// Helper function to attach keyboard navigation handler
+const attachDropdownKeyboardHandler = (inputElement) => {
+  inputElement.addEventListener("keydown", (event) => {
+    const dropdown = event.currentTarget.closest("div").querySelector("ul.dropdown-list");
+    if (!dropdown || dropdown.classList.contains("hidden")) return;
+
+    const items = dropdown.querySelectorAll("li:not(.no-items)");
+    if (items.length === 0) return;
+
+    const highlighted = dropdown.querySelector("li.highlighted");
+    let currentIndex = highlighted ? Array.from(items).indexOf(highlighted) : -1;
+
+    switch (event.key) {
+      case "ArrowDown":
+        event.preventDefault();
+        currentIndex = (currentIndex + 1) % items.length;
+        items.forEach((item) => item.classList.remove("highlighted"));
+        items[currentIndex].classList.add("highlighted");
+        items[currentIndex].scrollIntoView({ block: "nearest" });
+        break;
+
+      case "ArrowUp":
+        event.preventDefault();
+        currentIndex = currentIndex <= 0 ? items.length - 1 : currentIndex - 1;
+        items.forEach((item) => item.classList.remove("highlighted"));
+        items[currentIndex].classList.add("highlighted");
+        items[currentIndex].scrollIntoView({ block: "nearest" });
+        break;
+
+      case "Enter":
+        event.preventDefault();
+        if (highlighted) {
+          const itemName = highlighted.dataset.itemName;
+          if (itemName) {
+            event.currentTarget.value = itemName;
+            event.currentTarget.dispatchEvent(new Event("input", { bubbles: true }));
+            dropdown.classList.add("hidden");
+          }
+        }
+        break;
+
+      case "Escape":
+        event.preventDefault();
+        dropdown.classList.add("hidden");
+        break;
+    }
+  });
+};
+
 // Init
 const init = () => {
   populateWaterModalForm();
@@ -35,11 +100,13 @@ const init = () => {
   const fertRowSearchInput = fertRow.querySelector("input[name=fertilizer]");
   fertRowSearchInput.addEventListener("focus", (event) => {
     event.currentTarget.select();
-    renderDropdownItems(event.currentTarget, allFertData());
+    renderDropdownItems(event.currentTarget, allFertData(), event.currentTarget.value.toLowerCase());
   });
   fertRowSearchInput.addEventListener("input", (event) => {
     renderDropdownItems(event.currentTarget, allFertData(), event.currentTarget.value.toLowerCase());
   });
+  attachDropdownBlurHandler(fertRowSearchInput);
+  attachDropdownKeyboardHandler(fertRowSearchInput);
 
   const waterRow = document.querySelector("#water-row");
   waterRow.addEventListener("input", (event) => updateWaterRow(event.currentTarget));
@@ -95,11 +162,13 @@ const addFertRow = (numRows = 1) => {
     const rowSearchInput = row.querySelector("input[name=fertilizer]");
     rowSearchInput.addEventListener("focus", (event) => {
       event.currentTarget.select();
-      renderDropdownItems(event.currentTarget, allFertData());
+      renderDropdownItems(event.currentTarget, allFertData(), event.currentTarget.value.toLowerCase());
     });
     rowSearchInput.addEventListener("input", (event) => {
       renderDropdownItems(event.currentTarget, allFertData(), event.currentTarget.value.toLowerCase());
     });
+    attachDropdownBlurHandler(rowSearchInput);
+    attachDropdownKeyboardHandler(rowSearchInput);
   }
   rowButtons.querySelectorAll("button")[1].disabled = false;
 };
