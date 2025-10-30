@@ -30,6 +30,7 @@
     <script src="js/helper.js"></script>
     <script src="js/storage.js"></script>
     <script src="js/fertilizers.js"></script>
+    <script src="js/schema-manager.js"></script>
     <script src="js/calculator.js"></script>
     <title>bergrows Düngerrechner</title>
   </head>
@@ -312,6 +313,40 @@
         </table>
       </section>
       <button type="button" data-target="checklist-modal" onclick="toggleModal(event)">Gießcheckliste anzeigen</button>
+      <button type="button" data-target="schema-modal" onclick="toggleModal(event)">Düngeschemas verwalten</button>
+      <dialog id="schema-modal">
+        <article>
+          <header>
+            <button aria-label="Close" rel="prev" data-target="schema-modal" onclick="toggleModal(event)"></button>
+            <h3>💾 Düngeschemas verwalten</h3>
+          </header>
+          <div>
+            <h4>Aktuelles Schema speichern</h4>
+            <form id="save-schema-form" onsubmit="saveSchema(event)">
+              <div role="group">
+                <input
+                  type="text"
+                  name="schema-name"
+                  placeholder="Schema-Name eingeben..."
+                  required
+                  autocomplete="off"
+                />
+                <button type="submit">Speichern</button>
+              </div>
+            </form>
+          </div>
+          <hr />
+          <div>
+            <h4>Gespeicherte Schemas</h4>
+            <div id="schema-list">
+              <p style="color: var(--pico-muted-color); font-style: italic;">Keine Schemas gespeichert</p>
+            </div>
+          </div>
+          <footer>
+            <button data-target="schema-modal" onclick="toggleModal(event)">Schließen</button>
+          </footer>
+        </article>
+      </dialog>
       <dialog id="new-fert-modal">
         <article>
           <header>

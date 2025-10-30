@@ -135,6 +135,9 @@ const init = () => {
   if (persistFertilizers) {
     loadSavedFertilizers();
   }
+
+  // Initialize schema modal
+  renderSchemaList();
 };
 
 const toggleTheme = (event) => {

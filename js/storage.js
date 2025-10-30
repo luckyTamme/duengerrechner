@@ -7,6 +7,7 @@ const STORAGE_KEYS = {
   CUSTOM_FERT_DATA: "customFertData",
   PERSIST_FERTILIZERS: "persistFertilizers",
   SAVED_FERTILIZERS: "savedFertilizers",
+  FERTILIZER_SCHEMAS: "fertilizerSchemas",
 };
 
 // Safe localStorage getter with error handling
@@ -63,3 +64,17 @@ const setPersistFertilizers = (enabled) => setToStorage(STORAGE_KEYS.PERSIST_FER
 const getSavedFertilizers = () => getFromStorage(STORAGE_KEYS.SAVED_FERTILIZERS, []);
 const setSavedFertilizers = (data) => setToStorage(STORAGE_KEYS.SAVED_FERTILIZERS, data);
 const clearSavedFertilizers = () => removeFromStorage(STORAGE_KEYS.SAVED_FERTILIZERS);
+
+// Fertilizer schemas management
+const getFertilizerSchemas = () => getFromStorage(STORAGE_KEYS.FERTILIZER_SCHEMAS, []);
+const setFertilizerSchemas = (data) => setToStorage(STORAGE_KEYS.FERTILIZER_SCHEMAS, data);
+const addFertilizerSchema = (schema) => {
+  const schemas = getFertilizerSchemas();
+  schemas.push(schema);
+  return setFertilizerSchemas(schemas);
+};
+const deleteFertilizerSchema = (schemaName) => {
+  const schemas = getFertilizerSchemas();
+  const filtered = schemas.filter((s) => s.name !== schemaName);
+  return setFertilizerSchemas(filtered);
+};
