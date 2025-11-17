@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="light " />
     <meta
       property="og:description"
-      content="Das 'Schweizer Taschenmesser' für deine Cannabis-Düngung, mit über 180 Düngern in der Datenbank, Berücksichtigung deiner individuellen Wasserwerte und basierend auf aktuellen wissenschaftlichen Erkenntnissen zur Cannabiszucht."
+      content="Das 'Schweizer Taschenmesser' für deine Cannabis-Düngung, mit über 200 Düngern in der Datenbank, Berücksichtigung deiner individuellen Wasserwerte und basierend auf aktuellen wissenschaftlichen Erkenntnissen zur Cannabiszucht."
     />
     <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png" />
@@ -38,7 +38,7 @@
         <img style="width: 50px; margin: auto 10px" src="assets/images/icon.png" />
         <hgroup>
           <h1>bergrows Düngerrechner</h1>
-          <p>Version 2.9 <small>(2025-11-11)</small></p>
+          <p>Version 2.10 <small>(2025-11-17)</small></p>
         </hgroup>
         <ul>
           <li>
@@ -79,7 +79,16 @@
             </button>
           </li>
           <li>
-            <button type="button" class="contrast outline" href="#" onclick="resetState()">Schema zurücksetzen</button>
+            <details class="dropdown">
+              <summary role="button" class="contrast outline">Schema</summary>
+              <ul>
+                <li><a href="#" data-target="import-modal" onclick="toggleModal(event)">Import</a></li>
+                <li>
+                  <a id="export-button" href="#" download="schema.json">Export</a>
+                </li>
+                <li><a href="#" onclick="resetState()">Zurücksetzen</a></li>
+              </ul>
+            </details>
           </li>
           <li>
             <details class="dropdown">
@@ -144,7 +153,7 @@
               <td>
                 <div class="dropdown">
                   <input type="text" name="fertilizer" placeholder="Dünger auswählen" />
-                  <ul class="dropdown-list hidden"></ul>
+                  <ul class="dropdown-list hidden" tabindex="-1"></ul>
                 </div>
                 <span class="hidden" name="name"></span>
               </td>
@@ -566,6 +575,22 @@
           </footer>
         </article>
       </dialog>
+      <dialog id="import-modal">
+        <article>
+          <header>
+            <button aria-label="Close" rel="prev" data-target="import-modal" onclick="toggleModal(event)"></button>
+            <p><strong>📂 Schema importieren</strong></p>
+          </header>
+          <p>Hier kannst du ein gespeichertes Düngerschema wieder importieren.</p>
+          <form id="import-modal-form" data-target="import-modal" onsubmit="saveImportModalForm(event)">
+            <input name="file" type="file" accept="application/json" />
+          </form>
+          <footer>
+            <button data-target="import-modal" class="outline secondary" onclick="toggleModal(event)">Abbrechen</button>
+            <button form="import-modal-form">Importieren</button>
+          </footer>
+        </article>
+      </dialog>
     </main>
     <footer class="container-fluid">
       <div class="grid">
@@ -698,7 +723,7 @@
         </details>
         <p>Have fun and grow on! ✌️🏔️</p>
       </div>
-      <p>erstellt mit <b>bergrows Düngerrechner</b> v2.9</p>
+      <p>erstellt mit <b>bergrows Düngerrechner</b> v2.10</p>
     </footer>
     <script async src="https://scripts.simpleanalyticscdn.com/latest.js"></script>
     <noscript>

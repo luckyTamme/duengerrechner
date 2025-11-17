@@ -32,13 +32,7 @@ const init = () => {
   fertRow.addEventListener("input", (event) => updateFertRow(event.currentTarget, checklistRow));
 
   const fertRowSearchInput = fertRow.querySelector("input[name=fertilizer]");
-  fertRowSearchInput.addEventListener("focus", (event) => {
-    event.currentTarget.select();
-    renderDropdownItems(event.currentTarget, allFertData());
-  });
-  fertRowSearchInput.addEventListener("input", (event) => {
-    renderDropdownItems(event.currentTarget, allFertData(), event.currentTarget.value.toLowerCase());
-  });
+  attachDropdownEventHandlers(fertRowSearchInput, allFertData());
 
   const waterRow = document.querySelector("#water-row");
   waterRow.addEventListener("input", (event) => updateWaterRow(event.currentTarget));
@@ -73,7 +67,11 @@ const toggleTheme = (event) => {
 // Main Table
 const savedState = JSON.parse(localStorage.getItem("savedState")) || [];
 
-const saveState = () => localStorage.setItem("savedState", JSON.stringify(savedState));
+const saveState = () => {
+  const jsonStr = JSON.stringify(savedState);
+  localStorage.setItem("savedState", jsonStr);
+  document.querySelector("#export-button").href = `data:application/json;charset=utf-8,${encodeURIComponent(jsonStr)}`;
+};
 
 const updateState = (row, id, dose) => {
   savedState[row.rowIndex - 2] = { id: id, dose: dose };
@@ -99,6 +97,8 @@ const resetState = () => {
   location.reload();
 };
 
+const importState = () => {};
+
 const addFertilizer = (data) => {
   const id = 1000 + customFertData.length;
   customFertData.push({ id: id, ...data });
@@ -114,13 +114,7 @@ const addFertRow = (numRows = 1) => {
     );
     const row = addRow(tbody, (event) => updateFertRow(event.currentTarget, checklistRow), rowButtons);
     const rowSearchInput = row.querySelector("input[name=fertilizer]");
-    rowSearchInput.addEventListener("focus", (event) => {
-      event.currentTarget.select();
-      renderDropdownItems(event.currentTarget, allFertData());
-    });
-    rowSearchInput.addEventListener("input", (event) => {
-      renderDropdownItems(event.currentTarget, allFertData(), event.currentTarget.value.toLowerCase());
-    });
+    attachDropdownEventHandlers(rowSearchInput, allFertData());
   }
   rowButtons.querySelectorAll("button")[1].disabled = false;
 };
@@ -326,12 +320,29 @@ const updateChecklistRow = (row, data) => {
   uSpan.textContent = quality === 1 ? uSpan.dataset.original : "ml";
 };
 
+const updateChecklistMultiplier = (event) => {
+  document.querySelectorAll("#checklist-table tbody tr").forEach((row) => updateChecklistRow(row));
+};
+
 // Reset Modal
 const resetCustomFerts = (event) => {
   localStorage.removeItem("customFertData");
   location.reload();
 };
 
-const updateChecklistMultiplier = (event) => {
-  document.querySelectorAll("#checklist-table tbody tr").forEach((row) => updateChecklistRow(row));
+// Import Modal
+const saveImportModalForm = (event) => {
+  const data = saveModalForm(event);
+  const file = data.get("file");
+  const reader = new FileReader();
+  reader.onload = () => {
+    savedState.length = 0;
+    savedState.push(...JSON.parse(reader.result));
+    loadState();
+  };
+  reader.onerror = () => {
+    showMessage("Error reading the file. Please try again.", "error");
+  };
+  reader.readAsText(file);
+  toggleModal(event);
 };
