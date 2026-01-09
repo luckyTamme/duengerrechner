@@ -33,6 +33,12 @@ const attachDropdownBlurHandler = (inputElement) => {
   });
 };
 
+const highlightDropdownItem = (items, index) => {
+  items.forEach((item) => item.classList.remove("highlighted"));
+  items[index].classList.add("highlighted");
+  items[index].scrollIntoView({ block: "nearest" });
+};
+
 const attachDropdownKeyboardHandler = (inputElement) => {
   inputElement.addEventListener("keydown", (event) => {
     const dropdown = event.currentTarget.closest("div").querySelector("ul.dropdown-list");
@@ -48,17 +54,13 @@ const attachDropdownKeyboardHandler = (inputElement) => {
       case "ArrowDown":
         event.preventDefault();
         currentIndex = (currentIndex + 1) % items.length;
-        items.forEach((item) => item.classList.remove("highlighted"));
-        items[currentIndex].classList.add("highlighted");
-        items[currentIndex].scrollIntoView({ block: "nearest" });
+        highlightDropdownItem(items, currentIndex);
         break;
 
       case "ArrowUp":
         event.preventDefault();
         currentIndex = currentIndex <= 0 ? items.length - 1 : currentIndex - 1;
-        items.forEach((item) => item.classList.remove("highlighted"));
-        items[currentIndex].classList.add("highlighted");
-        items[currentIndex].scrollIntoView({ block: "nearest" });
+        highlightDropdownItem(items, currentIndex);
         break;
 
       case "Enter":
