@@ -97,7 +97,6 @@ const renderDropdownItems = (searchInput, data, query = "") => {
   const resultList = searchInput.closest("div").querySelector("ul");
   resultList.innerHTML = "";
   resultList.classList.remove("hidden");
-  resultList.setAttribute("tabindex", "-1"); // Make dropdown non-focusable
 
   const items = query === "" ? data : data.filter((item) => item.name.toLowerCase().includes(query));
   if (items.length === 0) {
@@ -105,7 +104,7 @@ const renderDropdownItems = (searchInput, data, query = "") => {
     return;
   }
 
-  items.forEach((item, index) => {
+  items.forEach((item) => {
     let li = document.createElement("li");
     li.innerHTML = highlightMatch(item.name, query);
     li.dataset.itemName = item.name;
