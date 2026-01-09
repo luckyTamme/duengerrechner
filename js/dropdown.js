@@ -115,7 +115,8 @@ const renderDropdownItems = (searchInput, data, query = "") => {
       selectDropdownItem(searchInput, resultList, item.name);
     });
 
-    // Add hover effect
+    // Sync .highlighted class with mouse hover for mixed keyboard/mouse navigation
+    // This ensures Enter key selects the item under the mouse cursor
     li.addEventListener("mouseenter", () => {
       resultList.querySelectorAll("li").forEach((l) => l.classList.remove("highlighted"));
       li.classList.add("highlighted");
