@@ -19,6 +19,80 @@ const selectDropdownItem = (searchInput, resultList, itemName) => {
   resultList.querySelectorAll("li").forEach((li) => li.classList.remove("highlighted"));
 };
 
+const attachDropdownBlurHandler = (inputElement) => {
+  inputElement.addEventListener("blur", (event) => {
+    const input = event.currentTarget;
+    const dropdown = input.closest("div").querySelector("ul.dropdown-list");
+
+    // Small delay to allow click events on dropdown items to complete
+    setTimeout(() => {
+      if (dropdown) {
+        dropdown.classList.add("hidden");
+      }
+    }, 150);
+  });
+};
+
+const attachDropdownKeyboardHandler = (inputElement) => {
+  inputElement.addEventListener("keydown", (event) => {
+    const dropdown = event.currentTarget.closest("div").querySelector("ul.dropdown-list");
+    if (!dropdown || dropdown.classList.contains("hidden")) return;
+
+    const items = dropdown.querySelectorAll("li:not(.no-items)");
+    if (items.length === 0) return;
+
+    const highlighted = dropdown.querySelector("li.highlighted");
+    let currentIndex = highlighted ? Array.from(items).indexOf(highlighted) : -1;
+
+    switch (event.key) {
+      case "ArrowDown":
+        event.preventDefault();
+        currentIndex = (currentIndex + 1) % items.length;
+        items.forEach((item) => item.classList.remove("highlighted"));
+        items[currentIndex].classList.add("highlighted");
+        items[currentIndex].scrollIntoView({ block: "nearest" });
+        break;
+
+      case "ArrowUp":
+        event.preventDefault();
+        currentIndex = currentIndex <= 0 ? items.length - 1 : currentIndex - 1;
+        items.forEach((item) => item.classList.remove("highlighted"));
+        items[currentIndex].classList.add("highlighted");
+        items[currentIndex].scrollIntoView({ block: "nearest" });
+        break;
+
+      case "Enter":
+        event.preventDefault();
+        if (highlighted) {
+          const itemName = highlighted.dataset.itemName;
+          if (itemName) {
+            event.currentTarget.value = itemName;
+            event.currentTarget.dispatchEvent(new Event("input", { bubbles: true }));
+            dropdown.classList.add("hidden");
+          }
+        }
+        break;
+
+      case "Escape":
+        event.preventDefault();
+        dropdown.classList.add("hidden");
+        break;
+    }
+  });
+};
+
+const attachDropdownEventHandlers = (dropdownInput, data) => {
+  dropdownInput.addEventListener("focus", (event) => {
+    event.currentTarget.select();
+    renderDropdownItems(event.currentTarget, data, event.currentTarget.value.toLowerCase());
+  });
+  dropdownInput.addEventListener("input", (event) =>
+    renderDropdownItems(event.currentTarget, data, event.currentTarget.value.toLowerCase())
+  );
+  attachDropdownBlurHandler(dropdownInput);
+  attachDropdownKeyboardHandler(dropdownInput);
+};
+
 const renderDropdownItems = (searchInput, data, query = "") => {
   const resultList = searchInput.closest("div").querySelector("ul");
   resultList.innerHTML = "";
